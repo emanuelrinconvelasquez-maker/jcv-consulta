@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="JCV">
+<meta name="theme-color" content="#F2F2F7">
+<meta name="robots" content="noindex, nofollow">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>JCV · Consulta</title>
+<style>
+:root{
+  --negro:#0A0A0A; --negro2:#1C1C1E; --negro3:#2C2C2E; --oro:#A9812D; --oro2:#C9A24D; --oro-claro:#F6EEDB;
+  --fondo:#F2F2F7; --blanco:#FFFFFF; --texto:#1C1C1E; --gris:#8E8E93; --gris2:#6C6C70; --linea:rgba(60,60,67,.14);
+  --rojo:#D93025; --rojo-claro:#FDECEA; --verde:#248A3D; --verde-claro:#E7F6EA; --azul:#0A64D6; --azul-claro:#E8F0FD;
+  --sb:env(safe-area-inset-bottom,0px); --st:env(safe-area-inset-top,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--fondo);color:var(--texto);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:15px;-webkit-font-smoothing:antialiased;overscroll-behavior-y:none;letter-spacing:-.01em}
+button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer}
+input,select,textarea{font:inherit}
+.num{font-variant-numeric:tabular-nums}
+/* ---------- bloqueo ---------- */
+#bloqueo{position:fixed;inset:0;background:var(--negro);display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:32px 28px calc(32px + var(--sb));z-index:50}
+#bloqueo img{width:132px;height:132px;border-radius:30px;margin-bottom:22px}
+#bloqueo h1{color:var(--oro2);font-size:20px;letter-spacing:.06em;margin:0 0 4px;font-weight:700}
+#bloqueo p{color:#9C968A;font-size:13px;margin:0 0 26px;text-align:center}
+#bloqueo input[type=password]{width:100%;max-width:320px;padding:14px 16px;border-radius:14px;border:1px solid #333;
+  background:var(--negro2);color:#fff;font-size:17px;text-align:center;outline:none}
+#bloqueo input:focus{border-color:var(--oro2)}
+#bloqueo .btn{margin-top:12px;width:100%;max-width:320px;padding:14px;border-radius:14px;background:var(--oro2);
+  color:var(--negro);font-weight:700;font-size:16px}
+#bloqueo label{color:#9C968A;font-size:13px;margin-top:16px;display:flex;gap:8px;align-items:center}
+#bloqueo .err{color:#FF8A80;font-size:13px;min-height:18px;margin-top:12px;text-align:center}
+/* ---------- cabecera (título grande tipo iOS) ---------- */
+header{position:sticky;top:0;z-index:20;background:rgba(242,242,247,.82);
+  -webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
+  padding:calc(8px + var(--st)) 18px 8px;display:flex;align-items:center;gap:11px}
+header img{width:34px;height:34px;border-radius:9px;box-shadow:0 0 0 .5px rgba(0,0,0,.15)}
+header .t{flex:1;min-width:0}
+header .t b{display:block;font-size:28px;font-weight:800;letter-spacing:-.025em;line-height:1.1}
+header .t span{display:block;font-size:12px;color:var(--gris);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header .t span.viejo{color:#C77700}
+.icono{width:34px;height:34px;border-radius:50%;background:rgba(118,118,128,.12);display:flex;align-items:center;
+  justify-content:center;color:var(--oro)}
+.icono svg{width:18px;height:18px}
+.girando svg{animation:gira 1s linear infinite}
+@keyframes gira{to{transform:rotate(360deg)}}
+main{padding:6px 16px calc(104px + var(--sb))}
+/* ---------- barra inferior flotante ---------- */
+nav{position:fixed;left:14px;right:14px;bottom:calc(10px + var(--sb));z-index:30;display:flex;gap:2px;padding:6px;
+  border-radius:32px;background:rgba(24,24,26,.86);
+  -webkit-backdrop-filter:saturate(180%) blur(22px);backdrop-filter:saturate(180%) blur(22px);
+  box-shadow:0 8px 28px rgba(0,0,0,.28),0 0 0 .5px rgba(255,255,255,.08) inset;max-width:520px;margin:0 auto}
+nav button{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;height:48px;border-radius:26px;
+  color:#D6D2CA;font-size:13px;font-weight:600;transition:flex .25s ease,background .25s ease;overflow:hidden;white-space:nowrap}
+nav button svg{width:24px;height:24px;flex:0 0 auto}
+nav button span{display:none}
+nav button.on{flex:1.9;background:rgba(255,255,255,.14);color:var(--oro2)}
+nav button.on span{display:inline}
+/* ---------- resumen compacto (antes tarjetas grandes) ---------- */
+.kpis{display:grid;grid-template-columns:1fr 1fr;background:var(--blanco);border-radius:14px;margin-bottom:18px;overflow:hidden}
+.kpi{padding:11px 14px;position:relative;min-width:0}
+.kpi:nth-child(even){border-left:.5px solid var(--linea)}
+.kpi:nth-child(n+3){border-top:.5px solid var(--linea)}
+.kpi small{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gris2);font-weight:500}
+.kpi small::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--oro2);flex:0 0 auto}
+.kpi b{display:block;font-size:19px;font-weight:700;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.02em}
+.kpi span{display:block;font-size:11.5px;color:var(--gris);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi.rojo small::before{background:var(--rojo)} .kpi.rojo b{color:var(--rojo)}
+.kpi.verde small::before{background:var(--verde)}
+.kpi.negro small::before{background:var(--negro)}
+.tarjeta{background:var(--blanco);border-radius:14px;margin:0 0 20px;overflow:hidden;position:relative}
+.tarjeta h2{margin:0;padding:12px 16px 6px;font-size:13px;font-weight:600;color:var(--gris2);
+  display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.tarjeta h2 em{font-style:normal;color:var(--gris);font-weight:400;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.buscar{width:100%;padding:9px 12px 9px 34px;border-radius:11px;border:0;background:rgba(118,118,128,.12)
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2.4'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") 10px 50%/16px no-repeat;
+  margin-bottom:14px;outline:none;font-size:16px;color:var(--texto)}
+.buscar::placeholder{color:var(--gris)}
+.fila{display:flex;align-items:center;gap:10px;padding:10px 16px;position:relative;min-height:52px}
+.fila + .fila::before,.tarjeta h2 + .fila::before{content:"";position:absolute;top:0;left:16px;right:0;border-top:.5px solid var(--linea)}
+.tarjeta h2 + .fila::before{display:none}
+.fila:active{background:#E5E5EA}
+.fila .izq{flex:1;min-width:0}
+.fila .izq b{display:block;font-size:15.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fila .izq span{display:block;font-size:12.5px;color:var(--gris);margin-top:1px}
+.fila .izq span b{font-size:inherit;font-weight:600}
+.fila .izq span .pild,.fila .izq span.pild{display:inline-block;margin-top:0}
+.fila .der{text-align:right;white-space:nowrap}
+.fila .der b{display:block;font-size:15px;font-weight:600}
+.fila .der span{display:block;font-size:12px;color:var(--gris);margin-top:1px}
+.chev{color:#C7C7CC;font-size:22px;margin-left:0;font-weight:300}
+.pild{display:inline-block;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:.02em}
+.pild.rojo{background:var(--rojo-claro);color:var(--rojo)}
+.pild.verde{background:var(--verde-claro);color:var(--verde)}
+.pild.gris{background:#EFEFF4;color:var(--gris2)}
+.pild.azul{background:var(--azul-claro);color:var(--azul)}
+.pild.oro{background:var(--oro-claro);color:#8A6A1F}
+.fila .izq .pild{font-size:10.5px;margin-top:0;display:inline-block}
+.fila .pild.rojo{color:var(--rojo)} .fila .pild.verde{color:var(--verde)} .fila .pild.gris{color:var(--gris2)}
+.fila .pild.azul{color:var(--azul)} .fila .pild.oro{color:#8A6A1F}
+.rojo-t{color:var(--rojo)} .verde-t{color:var(--verde)} .gris-t{color:var(--gris)}
+.vacio{padding:24px 16px;text-align:center;color:var(--gris);font-size:14px}
+/* detalle */
+.volver{display:flex;align-items:center;gap:2px;color:var(--oro);font-weight:500;font-size:17px;margin:0 0 10px -4px}
+.saldo-grande{background:linear-gradient(160deg,#1C1C1E,#0A0A0A);color:#fff;border-radius:18px;padding:16px 18px;margin-bottom:18px}
+.saldo-grande small{color:var(--oro2);font-size:12px;font-weight:600;letter-spacing:.02em}
+.saldo-grande h3{margin:2px 0 2px;font-size:30px;letter-spacing:-.02em;font-weight:700}
+.saldo-grande .nom{font-size:17px;font-weight:600;margin-bottom:8px}
+.saldo-grande .sub{display:flex;gap:6px 16px;margin-top:8px;font-size:12.5px;color:#AEAEB2;flex-wrap:wrap}
+.saldo-grande .sub b{color:#fff;font-weight:600}
+.saldo-grande .sub .ven b{color:#FF8A80}
+.mov{padding:10px 16px 10px 26px;position:relative}
+.mov + .mov::before{content:"";position:absolute;top:0;left:26px;right:0;border-top:.5px solid var(--linea)}
+.mov::after{content:"";position:absolute;left:12px;top:15px;width:7px;height:7px;border-radius:50%;background:var(--azul)}
+.mov .l1{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mov .l1 .fe{font-size:12.5px;color:var(--gris)}
+.mov .l1 .fe b{color:var(--texto);font-weight:600}
+.mov .l2{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-top:3px}
+.mov .l2 .d{font-size:14px;flex:1;min-width:0}
+.mov .l2 .m{font-weight:600;white-space:nowrap}
+.mov .l3{display:flex;justify-content:space-between;margin-top:2px;font-size:12px;color:var(--gris)}
+.mov.vencida::after{background:var(--rojo)} .mov.abono::after{background:var(--verde)} .mov.pagada::after{background:#C7C7CC}
+.semanas{display:flex;gap:2px;overflow-x:auto;padding:2px;margin:0 0 14px;border-radius:10px;background:rgba(118,118,128,.12);scrollbar-width:none}
+.semanas::-webkit-scrollbar{display:none}
+.semanas button{flex:1 0 auto;padding:6px 12px;border-radius:8px;font-size:13px;font-weight:500;color:var(--texto)}
+.semanas button.on{background:var(--blanco);font-weight:600;box-shadow:0 2px 6px rgba(0,0,0,.12)}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{font-size:11px;color:var(--gris);text-align:right;padding:8px 8px 6px;font-weight:600}
+th:first-child,td:first-child{text-align:left;padding-left:16px}
+th:last-child,td:last-child{padding-right:16px}
+td{padding:8px 8px;border-top:.5px solid var(--linea);text-align:right;white-space:nowrap}
+td.txt{white-space:normal}
+tr.total td{font-weight:700;background:#F9F9FB}
+tr.ok td{background:var(--verde-claro)}
+tr.alerta td{background:var(--rojo-claro)}
+tr.alerta td.dif{color:var(--rojo);font-weight:700}
+.lote td{padding:7px 6px;font-size:13px}
+.lote th{padding:8px 6px 6px}
+.lote td.cli{text-align:left;font-size:12px;max-width:120px;overflow:hidden;text-overflow:ellipsis}
+.lote td.enc{text-align:left;font-size:11.5px;color:var(--gris2);max-width:62px;overflow:hidden;text-overflow:ellipsis}
+.lote th.l{text-align:left}
+.aviso{background:#FFF4E0;color:#8A5A00;border-radius:12px;padding:10px 12px;font-size:13px;margin-bottom:12px}
+.pie{text-align:center;color:var(--gris);font-size:12px;margin:-10px 0 8px}
+.oculto{display:none!important}
+.botones{display:flex;gap:10px;margin:-4px 0 18px}
+.botones .boton{flex:1}
+.boton{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;border-radius:14px;
+  background:var(--negro);color:var(--oro2);font-weight:600;font-size:15.5px}
+.boton.oro{background:var(--oro2);color:var(--negro)}
+.boton.claro{background:var(--blanco);color:var(--oro)}
+.boton:disabled{opacity:.6}
+.boton svg{width:20px;height:20px}
+.campo{font-family:inherit;width:100%;padding:10px 12px;border-radius:10px;border:0;font-size:16px;outline:none;
+  background:#F2F2F7;margin:6px 0 10px;resize:none;color:var(--texto);-webkit-appearance:none;appearance:none}
+select.campo{background:#F2F2F7 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2.4'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E") right 10px center/16px no-repeat;padding-right:32px}
+.pad{padding:4px 16px 16px}
+#visor{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.94);display:flex;flex-direction:column;
+  padding:calc(12px + var(--st)) 14px calc(14px + var(--sb))}
+#visor .marco{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;border-radius:14px;background:#1C1C1E;display:flex;
+  align-items:flex-start;justify-content:center}
+#visor img{width:100%;height:auto;display:block;-webkit-touch-callout:default}
+#visor .barra{display:flex;gap:10px;margin-top:12px}
+#visor .barra button{flex:1}
+#visor p{color:#8E8E93;font-size:12.5px;text-align:center;margin:10px 0 0}
+#visor .cerrar{background:var(--negro3);color:#fff}
+</style>
+</head>
+<body>
+
+<div id="bloqueo">
+  <img src="logo.png" alt="JCV">
+  <h1>JCV · CONSULTA</h1>
+  <p>Saldos, ventas y lotes · solo lectura</p>
+  <input id="clave" type="password" placeholder="Contraseña" autocomplete="current-password" enterkeyhint="go">
+  <button class="btn" id="entrar">Entrar</button>
+  <label><input type="checkbox" id="recordar" checked> Recordar en este celular</label>
+  <div class="err" id="err"></div>
+</div>
+
+<header class="oculto" id="cab">
+  <img src="icon-192.png" alt="">
+  <div class="t"><b id="titulo">Cartera</b><span id="actualizado">—</span></div>
+  <button class="icono" id="recargar" aria-label="Actualizar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>
+  </button>
+</header>
+
+<main class="oculto" id="contenido"></main>
+
+<nav class="oculto" id="nav">
+  <button data-v="cartera" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18M7 15h4"/></svg><span>Cartera</span></button>
+  <button data-v="ventas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Ventas</span></button>
+  <button data-v="lotes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 10h18M9 10v10"/></svg><span>Lotes</span></button>
+  <button data-v="facturar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg><span>Facturar</span></button>
+  <button data-v="remisiones"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v4h4M10 12h6M10 16h6"/></svg><span>Remisiones</span></button>
+</nav>
+
+<div id="visor" class="oculto">
+  <div class="marco"><img id="visor-img" alt="Imagen"></div>
+  <div class="barra">
+    <button class="boton cerrar" onclick="cerrarVisor()">Cerrar</button>
+    <button class="boton oro" id="compartir" onclick="compartir()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>
+      Compartir</button>
+  </div>
+  <p>Compartir → WhatsApp. También puedes mantener presionada la imagen para guardarla en Fotos.</p>
+</div>
+
+<script src="dibujos.js"></script>
+<script>
+"use strict";
+const REPO = "emanuelrinconvelasquez-maker/jcv-consulta", RAMA = "datos", ARCHIVO = "datos.jcv";
+const URLS = () => [
+  `https://api.github.com/repos/${REPO}/contents/${ARCHIVO}?ref=${RAMA}&t=${Date.now()}`,
+  `https://raw.githubusercontent.com/${REPO}/${RAMA}/${ARCHIVO}?t=${Date.now()}`,
+];
+const LS = {clave: "jcv_clave", sal: "jcv_sal", paquete: "jcv_paquete"};
+let D = null, vista = "cartera", pila = [], semSel = 0;
+
+/* ---------- utilidades ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const miles = n => Math.round(Math.abs(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+const cop = n => (n < 0 ? "-$ " : "$ ") + miles(n);
+const kg = n => n == null ? "" : (n < 0 ? "-" : "") + miles(Math.trunc(Math.abs(n))) + "," + Math.round(Math.abs(n) * 10 % 10);
+const fe = s => s ? `${s.slice(8,10)}/${s.slice(5,7)}/${s.slice(0,4)}` : "";
+const fc = s => s ? `${s.slice(8,10)}/${s.slice(5,7)}` : "";
+const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const ub64 = u => btoa(String.fromCharCode(...new Uint8Array(u)));
+function hace(iso){
+  const d = new Date(iso), m = Math.round((Date.now() - d) / 60000);
+  const hora = d.toLocaleTimeString("es-CO", {hour: "numeric", minute: "2-digit"});
+  if (m < 1) return "hace un momento";
+  if (m < 60) return `hace ${m} min`;
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  if (d >= hoy) return `hoy ${hora}`;
+  if (d >= hoy - 864e5) return `ayer ${hora}`;
+  return `${fe(iso)} ${hora}`;
+}
+
+/* ---------- cifrado (AES-256-GCM, clave PBKDF2-SHA256) ---------- */
+async function derivar(clave, sal, it){
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(clave), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({name: "PBKDF2", hash: "SHA-256", salt: sal, iterations: it},
+    base, {name: "AES-GCM", length: 256}, true, ["decrypt"]);
+}
+async function abrir(paq, key){
+  const plano = await crypto.subtle.decrypt({name: "AES-GCM", iv: b64(paq.iv)}, key, b64(paq.ct));
+  return JSON.parse(new TextDecoder().decode(plano));
+}
+async function claveGuardada(){
+  const k = localStorage.getItem(LS.clave);
+  if (!k) return null;
+  return crypto.subtle.importKey("raw", b64(k), {name: "AES-GCM"}, false, ["decrypt"]);
+}
+
+/* ---------- datos ---------- */
+async function bajar(){
+  let ultimoError;
+  for (const url of URLS()){
+    try {
+      const r = await fetch(url, {cache: "no-store", headers: url.includes("api.github.com") ? {Accept: "application/vnd.github.raw"} : {}});
+      if (r.ok) return await r.text();
+      ultimoError = new Error("HTTP " + r.status);
+    } catch (e) { ultimoError = e; }
+  }
+  throw ultimoError;
+}
+async function cargar(conRed = true){
+  let texto = localStorage.getItem(LS.paquete), sinRed = false;
+  if (conRed){
+    girar(true);
+    try { texto = await bajar(); localStorage.setItem(LS.paquete, texto); }
+    catch (e) { sinRed = true; }
+    girar(false);
+  }
+  if (!texto) throw new Error("No se pudo descargar la información. Revisa el internet.");
+  const paq = JSON.parse(texto);
+  if (localStorage.getItem(LS.sal) !== paq.sal) localStorage.removeItem(LS.clave);  // cambió la contraseña en el PC
+  const key = await claveGuardada();
+  if (!key) return {necesitaClave: true, paq};
+  try { D = await abrir(paq, key); }
+  catch (e) { localStorage.removeItem(LS.clave); return {necesitaClave: true, paq}; }
+  D._sinRed = sinRed;
+  return {ok: true};
+}
+function girar(on){ $("#recargar").classList.toggle("girando", on); }
+
+/* ---------- entrada ---------- */
+async function entrar(){
+  const clave = $("#clave").value; if (!clave) return;
+  $("#err").textContent = "Abriendo…"; $("#entrar").disabled = true;
+  try {
+    let texto = localStorage.getItem(LS.paquete);
+    try { texto = await bajar(); localStorage.setItem(LS.paquete, texto); } catch (e) { if (!texto) throw e; }
+    const paq = JSON.parse(texto);
+    const key = await derivar(clave, b64(paq.sal), paq.it);
+    D = await abrir(paq, key).catch(() => { throw new Error("clave"); });
+    if ($("#recordar").checked){
+      localStorage.setItem(LS.clave, ub64(await crypto.subtle.exportKey("raw", key)));
+      localStorage.setItem(LS.sal, paq.sal);
+    }
+    $("#clave").value = ""; $("#err").textContent = "";
+    mostrarApp();
+  } catch (e) {
+    $("#err").textContent = e.message === "clave" ? "Contraseña incorrecta." :
+      "No se pudo descargar la información. Revisa el internet e intenta de nuevo.";
+  } finally { $("#entrar").disabled = false; }
+}
+function mostrarApp(){
+  $("#bloqueo").classList.add("oculto");
+  ["#cab", "#contenido", "#nav"].forEach(s => $(s).classList.remove("oculto"));
+  pintar();
+}
+function bloquear(msg){
+  $("#bloqueo").classList.remove("oculto");
+  ["#cab", "#contenido", "#nav"].forEach(s => $(s).classList.add("oculto"));
+  $("#err").textContent = msg || "";
+}
+
+/* ---------- navegación ---------- */
+const TITULOS = {cartera: "Cartera", ventas: "Ventas", lotes: "Lotes y cava", remisiones: "Remisiones", facturar: "Facturación"};
+function ir(v){ vista = v; pila = []; document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.v === v)); pintar(); scrollTo(0, 0); }
+function abrirDetalle(fn){ pila.push({fn, y: scrollY}); pintar(); scrollTo(0, 0); }
+function volver(){ const p = pila.pop(); pintar(); if (p) scrollTo(0, p.y); }
+function pintar(){
+  if (!D) return;
+  $("#titulo").textContent = TITULOS[vista];
+  const act = $("#actualizado"), horas = (Date.now() - new Date(D.gen)) / 36e5;
+  act.textContent = (D._sinRed ? "Sin internet · " : "") + "Actualizado " + hace(D.gen);
+  act.classList.toggle("viejo", horas > 24 || D._sinRed);
+  const top = pila[pila.length - 1];
+  $("#contenido").innerHTML = top ? `<button class="volver" onclick="volver()">‹ Volver</button>` + top.fn() : VISTAS[vista]();
+}
+
+/* ---------- vistas ---------- */
+const VISTAS = {
+  cartera(){
+    const k = D.kpi;
+    let h = `<div class="kpis">
+      <div class="kpi"><small>Cartera total</small><b class="num">${cop(k.cartera)}</b><span>${D.clientes.filter(c => c.saldo > 0.5).length} clientes con saldo</span></div>
+      <div class="kpi ${k.vencida > 0 ? "rojo" : "verde"}"><small>Vencida</small><b class="num">${cop(k.vencida)}</b><span>${k.n_ven} clientes · más de ${D.venc_dias} días</span></div>
+    </div>
+    <input class="buscar" id="q" placeholder="Buscar cliente" oninput="filtrar()" autocomplete="off">
+    <div class="tarjeta"><h2>Clientes <em>saldo</em></h2><div id="lista"></div></div>`;
+    setTimeout(filtrar, 0);
+    return h;
+  },
+  ventas(){
+    const s = D.semanas[semSel];
+    let h = `<div class="semanas">${D.semanas.map((x, i) =>
+      `<button class="${i === semSel ? "on" : ""}" onclick="semSel=${i};pintar()">Sem ${x.s}${i === 0 ? " · actual" : ""}</button>`).join("")}</div>`;
+    const tg = s.tot_g || {c: 0, p: 0, v: 0}, vg = s.ventas_g || [];
+    h += `<div class="kpis">
+      <div class="kpi negro"><small>Vendido total</small><b class="num">${cop(s.tot.v + tg.v)}</b><span>${fc(s.d)} – ${fc(s.h)} · ${s.rems.length} remisiones</span></div>
+      <div class="kpi verde"><small>Abonos</small><b class="num">${cop(s.abonos)}</b><span>recibidos en la semana</span></div>
+      <div class="kpi"><small>Cerdos</small><b class="num">${s.tot.c}</b><span class="num">${kg(s.tot.p)} kg · ${cop(s.tot.v)}</span></div>
+      <div class="kpi"><small>Ganado (animales)</small><b class="num">${tg.c}</b><span class="num">${cop(tg.v)}</span></div>
+    </div>`;
+    const bloque = (titulo, filas, tot, unidad) => {
+      let b = `<div class="tarjeta"><h2>${titulo} <em>semana ${s.s}</em></h2>`;
+      for (const v of filas) b += `<div class="fila"><div class="izq"><b>${esc(v.cli)}</b><span>${v.c} ${unidad}${v.p ? " · " + kg(v.p) + " kg" : ""}${v.pr ? " · " + esc(v.pr) : ""}</span></div>
+        <div class="der"><b class="num">${cop(v.v)}</b></div></div>`;
+      b += `<div class="fila" style="background:#FAF8F4"><div class="izq"><b>Total</b><span>${tot.c} ${unidad}${tot.p ? " · " + kg(tot.p) + " kg" : ""}</span></div><div class="der"><b class="num">${cop(tot.v)}</b></div></div>`;
+      return b + `</div>`;
+    };
+    if (!s.ventas.length && !vg.length) return h + `<div class="tarjeta"><div class="vacio">No hay ventas esta semana.</div></div>`;
+    if (s.ventas.length) h += bloque("Cerdo por cliente", s.ventas, s.tot, "cerdos");
+    if (vg.length) h += bloque("Ganado por cliente", vg, tg, "animales");
+    return h;
+  },
+  lotes(){
+    const k = D.kpi;
+    let h = `<div class="kpis">
+      <div class="kpi"><small>Cerdos en cava</small><b class="num">${k.cava}</b><span class="num">${kg(k.cava_kg)} kg canal fría</span></div>
+      <div class="kpi negro"><small>Lotes con cava</small><b class="num">${D.cava.length}</b><span>pendientes por entregar</span></div>
+    </div>`;
+    if (D.cava.length){
+      h += `<div class="tarjeta"><h2>Cava <em>números pendientes</em></h2>`;
+      for (const c of D.cava) h += `<div class="fila"><div class="izq"><b>${esc(c.m)} <span class="gris-t" style="display:inline;font-weight:400;font-size:13px">· ${fe(c.f)}</span></b><span>${esc(c.nums)}</span></div><div class="der"><b class="num">${c.n}</b><span class="num">${kg(c.fr)} kg</span></div></div>`;
+      h += `</div>`;
+    }
+    h += `<div class="tarjeta"><h2>Lotes <em>últimas ${D.semanas.length} semanas</em></h2>`;
+    for (const L of D.lotes){
+      const dif = L.dif == null ? "" : `<span class="${L.dif < -2 ? "rojo-t" : ""}">dif ${kg(L.dif)} kg</span>`;
+      h += `<div class="fila" onclick="abrirDetalle(()=>detLote(${L.id}))"><div class="izq"><b>${esc(L.m)} · ${fe(L.f)}</b>
+        <span>${L.n} cerdos · ${L.ent} entregados ${L.cerdos.some(cerdoRaro) ? `<span class="pild rojo">${L.cerdos.filter(cerdoRaro).length} fuera de rango</span> ` : ""}${L.pend ? `· <b style="display:inline;color:#8A6A1F">${L.pend} en cava</b>` : ""}</span></div>
+        <div class="der"><b class="num">${kg(L.cal)}</b>${dif || `<span>kg caliente</span>`}</div><span class="chev">›</span></div>`;
+    }
+    return h + `</div>`;
+  },
+  remisiones(){
+    const s = D.semanas[semSel];
+    let h = `<div class="semanas">${D.semanas.map((x, i) =>
+      `<button class="${i === semSel ? "on" : ""}" onclick="semSel=${i};pintar()">Sem ${x.s}${i === 0 ? " · actual" : ""}</button>`).join("")}</div>`;
+    h += `<div class="tarjeta"><h2>Remisiones <em>${fc(s.d)} – ${fc(s.h)}</em></h2>`;
+    if (!s.rems.length) h += `<div class="vacio">No hay remisiones esta semana.</div>`;
+    for (const r of [...s.rems].sort((a, b) => (b.f + b.id).localeCompare(a.f + a.id))){
+      h += `<div class="fila" onclick="abrirDetalle(()=>detRem(${semSel},${r.id}))"><div class="izq"><b>${esc(r.cli)}</b>
+        <span>${fc(r.f)} · ${r.num ? "N° " + esc(r.num) + " · " : ""}${pildTipo(r.tipo)} · ${r.c} ${r.tipo === "GANADO" ? "animales" : "cerdos"}</span></div>
+        <div class="der"><b class="num">${cop(r.v)}</b><span class="num">${kg(r.p)} kg</span></div><span class="chev">›</span></div>`;
+    }
+    return h + `</div>`;
+  },
+};
+VISTAS.facturar = function(){
+  const F = D.fact;
+  if (!F) return `<div class="vacio">Actualiza la app del PC para ver la facturación.</div>`;
+  const t = F.tot, n = F.pend.reduce((a, g) => a + g.rems.length, 0), v = F.pend.reduce((a, g) => a + g.total, 0);
+  let h = `<div class="kpis">
+    ${F.bal && (F.bal.env || F.bal.rec)
+      ? (F.bal.falta > 0.5
+          ? `<div class="kpi rojo"><small>Falta para igualar</small><b class="num">${cop(F.bal.falta)}</b><span>recibidas − enviadas · este mes</span></div>`
+          : `<div class="kpi verde"><small>Igualado</small><b class="num">${cop(F.bal.sobra)}</b><span>enviadas superan las recibidas</span></div>`)
+      : `<div class="kpi"><small>Falta para igualar</small><b class="num">—</b><span>importa el listado de la DIAN en el PC</span></div>`}
+    <div class="kpi verde"><small>Facturado hoy</small><b class="num">${cop(t.hoy.t)}</b><span>${t.hoy.n} facturas</span></div>
+    <div class="kpi"><small>Esta semana</small><b class="num">${cop(t.semana.t)}</b><span>${t.semana.n} facturas</span></div>
+    <div class="kpi negro"><small>Este mes</small><b class="num">${cop(t.mes.t)}</b><span>${t.mes.n} facturas · año ${cop(t.anio.t)}</span></div>
+  </div>`;
+  if (F.bal && (F.bal.env || F.bal.rec)){
+    const B = F.bal, pct = B.rec ? Math.min(100, Math.round(B.env / B.rec * 100)) : 100;
+    h += `<div class="tarjeta"><h2>Enviadas vs recibidas <em>este mes${B.hasta ? " · listado al " + fc(B.hasta) : ""}</em></h2><div class="pad">
+      <div class="fila" style="border:0;padding:6px 0"><div class="izq"><b>Facturas enviadas</b></div><div class="der"><b class="num">${cop(B.env)}</b></div></div>
+      <div class="fila" style="padding:6px 0"><div class="izq"><b>Facturas recibidas</b></div><div class="der"><b class="num">${cop(B.rec)}</b></div></div>
+      <div style="height:10px;border-radius:6px;background:#ECE8DF;margin:8px 0"><div style="height:10px;border-radius:6px;width:${pct}%;background:${pct >= 100 ? "var(--verde)" : "var(--oro)"}"></div></div>
+      ${B.falta > 0.5 ? `<div class="fila" style="padding:6px 0;border:0"><div class="izq"><b class="rojo-t">Falta facturar para igualar</b><span>${B.desp > 0.5 ? "después de lo pendiente faltarían " + cop(B.desp) : "lo pendiente alcanza"}</span></div><div class="der"><b class="num rojo-t">${cop(B.falta)}</b></div></div>`
+        : `<div class="fila" style="padding:6px 0;border:0"><div class="izq"><b class="verde-t">Enviadas superan las recibidas</b></div><div class="der"><b class="num verde-t">${cop(B.sobra)}</b></div></div>`}
+    </div></div>`;
+  }
+  h += `<div class="tarjeta"><h2>Remisiones por facturar <em>${n} · ${cop(v)}</em></h2>`;
+  if (!F.pend.length) h += `<div class="vacio">Nada pendiente por facturar.</div>`;
+  for (const g of F.pend){
+    h += `<div class="fila" style="background:#FAF8F4"><div class="izq"><b>${esc(g.cli)}</b><span>${esc(g.rs || "— faltan datos de facturación —")}${g.doc ? " · " + esc(g.doc) : ""}</span>
+      <span>${g.pago}${g.pago === "Crédito" ? " · vence " + fe(g.vence) : ""}</span></div><div class="der"><b class="num">${cop(g.total)}</b><span>${g.rems.length} rem.</span></div></div>`;
+    for (const r of g.rems){
+      const l = r.lin[0];
+      h += `<div class="fila"><div class="izq"><b style="font-weight:500">Rem. ${esc(r.num)} · ${fc(r.f)}</b><span>${esc(l[0])} · ${l[4] === "Kilogramo" ? kg(l[1]) + " kg" : l[1] + " und."} × ${cop(l[2])}</span></div>
+        <div class="der"><b class="num">${cop(r.v)}</b></div></div>`;
+    }
+  }
+  h += `</div><div class="tarjeta"><h2>Últimas facturas</h2>`;
+  if (!F.ult.length) h += `<div class="vacio">Todavía no hay facturas importadas.</div>`;
+  for (const f of F.ult) h += `<div class="fila"><div class="izq"><b>${esc(f.num)} · ${esc(f.cli)}</b><span>${fe(f.f)}${f.rem ? " · Rem. " + esc(f.rem) : ""}</span></div><div class="der"><b class="num">${cop(f.t)}</b></div></div>`;
+  return h + `</div>`;
+};
+function pildTipo(t){ return `<span class="pild ${t === "GANADO" ? "verde" : t === "ASTILLA" ? "oro" : t === "DESPACHO" ? "azul" : "gris"}">${t}</span>`; }
+
+function filtrar(){
+  const q = ($("#q")?.value || "").trim().toLowerCase(), el = $("#lista"); if (!el) return;
+  const cs = D.clientes.filter(c => c.n.toLowerCase().includes(q));
+  el.innerHTML = cs.length ? cs.map(c => `<div class="fila" onclick="abrirDetalle(()=>detCliente(${c.id}))">
+      <div class="izq"><b>${esc(c.n)}</b><span>${c.ven > 0.5 ? `<span class="pild rojo">VENCIDO ${cop(c.ven)}</span>` : (c.saldo > 0.5 ? "Al día" : c.saldo < -0.5 ? "Saldo a favor" : "Sin saldo")}</span></div>
+      <div class="der"><b class="num ${c.saldo < -0.5 ? "verde-t" : ""}">${cop(c.saldo)}</b><span>${c.ult ? "últ. " + fc(c.ult) : ""}</span></div><span class="chev">›</span></div>`).join("")
+    : `<div class="vacio">Ningún cliente con “${esc(q)}”.</div>`;
+}
+
+function detCliente(id){
+  const c = D.clientes.find(x => x.id === id);
+  const deudasPend = c.movs.filter(m => m.t === "DEUDA" && m.pend > 0.5);
+  let h = `<div class="saldo-grande"><div class="nom">${esc(c.n)}</div><small>Saldo</small>
+    <h3 class="num">${cop(c.saldo)}</h3>
+    <div class="sub"><span class="ven">Vencido <b class="num">${cop(c.ven)}</b></span>
+    <span>Deudas pendientes <b>${deudasPend.length}</b></span>${c.dmax ? `<span>Más vieja <b>${c.dmax} días</b></span>` : ""}</div></div>`;
+  const semanas = Object.keys(c.est || {}).sort((a, b) => { const [a1, s1] = a.split("-").map(Number), [a2, s2] = b.split("-").map(Number); return a2 - a1 || s2 - s1; });
+  if (semanas.length){
+    h += `<div class="tarjeta"><h2>Estado de cuenta en imagen</h2><div class="pad">
+      <select class="campo" id="sem-est">${semanas.map(k => { const e = c.est[k].DEUDA || c.est[k]; return `<option value="${k}">Semana ${e.s} · ${e.d.slice(0,5)} al ${e.h.slice(0,5)}</option>`; }).join("")}</select>
+      <select class="campo" id="fmt-est">
+        <option value="DEUDA" ${c.fmt === "DEUDA" ? "selected" : ""}>Solo lo que debe, por remisión</option>
+        <option value="SEMANA" ${c.fmt === "SEMANA" ? "selected" : ""}>Solo lo que debe, agrupado por semana</option>
+        <option value="DETALLE" ${c.fmt === "DETALLE" ? "selected" : ""}>Con compras y abonos de la semana</option></select>
+      <textarea class="campo" id="obs-est" rows="2" placeholder="Observación o acuerdo (opcional)"></textarea>
+      <button class="boton" id="btn-est" onclick="imgEstado(${c.id})">${ICONO_IMG}Imagen del estado de cuenta</button></div></div>`;
+  }
+  h += `<div class="tarjeta"><h2>Movimientos <em>más recientes primero</em></h2>`;
+  if (!c.movs.length) h += `<div class="vacio">Sin movimientos.</div>`;
+  for (const m of [...c.movs].reverse()){
+    const cls = m.t === "ABONO" ? "abono" : m.ven ? "vencida" : m.e === "PAGADA" ? "pagada" : "deuda";
+    const pill = m.t === "ABONO" ? `<span class="pild verde">ABONO${m.e ? " · " + esc(m.e) : ""}</span>`
+      : m.ven ? `<span class="pild rojo">${esc(m.e)}</span>` : m.e === "PAGADA" ? `<span class="pild gris">PAGADA</span>` : `<span class="pild azul">AL DÍA</span>`;
+    const sem = m.t === "DEUDA" ? `<b>Sem ${m.s}${m.a !== D.a ? "·" + String(m.a).slice(2) : ""}</b> · ` : "";
+    h += `<div class="mov ${cls}"><div class="l1"><span class="fe">${sem}${fe(m.f)}</span>${pill}</div>
+      <div class="l2"><span class="d">${esc(m.d) || (m.t === "ABONO" ? "Abono" : "Deuda")}</span><span class="m num ${m.t === "ABONO" ? "verde-t" : ""}">${m.t === "ABONO" ? "−" : ""}${cop(m.m)}</span></div>
+      <div class="l3"><span>${m.t === "DEUDA" && m.pend > 0.5 && m.pend < m.m - 0.5 ? "Falta " + cop(m.pend) : ""}</span><span class="num">Saldo ${cop(m.sal)}</span></div></div>`;
+  }
+  return h + `</div>`;
+}
+
+function detRem(si, id){
+  const r = D.semanas[si].rems.find(x => x.id === id);
+  let h = `<div class="saldo-grande"><div class="nom">${esc(r.cli)}</div><small>${r.tipo === "DESPACHO" ? "Despacho" : "Remisión" + (r.num ? " N° " + esc(r.num) : "")} · ${fe(r.f)}</small>
+    <h3 class="num">${cop(r.v)}</h3>
+    <div class="sub"><span><b>${r.c}</b> ${r.tipo === "GANADO" ? "animales" : "cerdos"}</span><span><b class="num">${kg(r.p)}</b> kg</span>
+    <span><b class="num">${cop(r.pk)}</b>${r.tipo === "GANADO" && r.p === 0 ? " c/u" : "/kg"}</span>${r.sac ? `<span>Sacrificio <b class="num">${r.c} × ${cop(r.sacu)}</b> = <b class="num">${cop(r.sac)}</b></span>` : ""}${r.enc ? `<span>Despachó <b>${esc(r.enc)}</b></span>` : ""}</div></div>`;
+  if (r.img) h += `<div style="margin:-2px 0 14px"><button class="boton" id="btn-rem" onclick="imgRem(${si},${r.id})">${ICONO_IMG}${r.img.desp ? "Imagen del despacho" : "Imagen de la remisión"}</button></div>`;
+  h += `<div class="tarjeta"><h2>Detalle ${pildTipo(r.tipo)}</h2><table><tr><th>Lote / desc.</th><th>N°</th><th>Peso</th><th>C. fría</th><th>Dif</th></tr>`;
+  for (const l of r.lin){
+    const dif = l.fr != null && l.p ? l.fr - l.p * (r.tipo === "ASTILLA" ? 1.1 : 1) : null;
+    h += `<tr><td class="txt">${esc(l.lo || l.de)}</td><td>${l.nu ?? (l.c > 1 ? l.c : "")}</td><td class="num">${kg(l.p)}</td><td class="num">${l.fr != null ? kg(l.fr) : ""}</td>
+      <td class="num ${dif != null && dif < -2 ? "rojo-t" : ""}">${dif != null ? kg(dif) : ""}</td></tr>`;
+  }
+  h += `<tr class="total"><td>Total</td><td>${r.c}</td><td class="num">${kg(r.p)}</td><td></td><td></td></tr></table></div>`;
+  if (r.obs) h += `<div class="tarjeta"><h2>Observación</h2><div class="fila" style="border:0;padding-top:0">${esc(r.obs)}</div></div>`;
+  return h;
+}
+
+function difCerdo(c){ return c.en == null ? null : c.fr - c.en; }
+function cerdoRaro(c){ const d = difCerdo(c), u = D.umb || [5, -2]; return d != null && (d > u[0] || d < u[1]); }
+function detLote(id){
+  const L = D.lotes.find(x => x.id === id);
+  const ent = L.cerdos.filter(c => c.en != null), raros = L.cerdos.filter(cerdoRaro).length;
+  const tf = ent.reduce((a, c) => a + c.fr, 0), te = ent.reduce((a, c) => a + c.en, 0);
+  let h = `<div class="saldo-grande"><div class="nom">${esc(L.m)} · ${fe(L.f)}</div><small>Diferencia fría − entrega${L.pend ? " · entregados" : ""}</small>
+    <h3 class="num">${ent.length ? kg(tf - te) + " kg" : "—"}</h3>
+    <div class="sub"><span><b>${L.n}</b> cerdos</span><span>Fría <b class="num">${kg(L.fr)}</b></span>
+    <span>Merma <b>${kg(L.merma)}</b> kg/cerdo</span><span>En cava <b>${L.pend}</b></span>${raros ? `<span class="ven">Fuera de rango <b>${raros}</b></span>` : ""}</div></div>
+  <div class="botones"><button class="boton" id="btn-lote" onclick="pdfLote(${L.id})">${ICONO_PDF}PDF del lote</button></div>`;
+  const conEnc = L.cerdos.some(c => c.enc);
+  h += `<div class="tarjeta"><table class="lote"><tr><th>N°</th><th>Fría</th><th>Entrega</th><th>Dif</th><th class="l">Cliente</th>${conEnc ? `<th class="l">Enc.</th>` : ""}</tr>`;
+  for (const c of L.cerdos){
+    const d = difCerdo(c);
+    h += `<tr class="${cerdoRaro(c) ? "alerta" : ""}"><td><b>${c.n}</b></td><td class="num">${kg(c.fr)}</td>
+      <td class="num">${c.en == null ? `<span class="pild oro">CAVA</span>` : kg(c.en) + (c.tv === "ASTILLA" ? "<sup>a</sup>" : "")}</td>
+      <td class="num dif">${d == null ? "" : kg(d)}</td>
+      <td class="cli">${esc(c.cli)}</td>${conEnc ? `<td class="enc">${esc(c.enc)}</td>` : ""}</tr>`;
+  }
+  h += `<tr class="total"><td>Total</td><td class="num">${kg(tf)}</td><td class="num">${kg(te)}</td><td class="num">${kg(tf - te)}</td><td colspan="${conEnc ? 2 : 1}" class="cli">${ent.length} entregados</td></tr>`;
+  const u = D.umb || [5, -2];
+  return h + `</table></div><div class="pie">Dif = fría − entrega · en rojo si pasa de ${kg(u[0])} o baja de ${kg(u[1])} kg · <sup>a</sup> astilla</div>`;
+}
+async function pdfLote(id){
+  const L = D.lotes.find(x => x.id === id), b = $("#btn-lote");
+  b.disabled = true; b.textContent = "Generando…";
+  try {
+    const cv = await dibujarLote(L, D.umb);
+    const pdf = await canvasAPdf(cv);
+    const nombre = `LOTE_${nombreArchivo(L.m)}_${L.f}`;
+    await mostrarImagen(cv, nombre, new File([pdf], nombre + ".pdf", {type: "application/pdf"}));
+  } finally { b.disabled = false; b.innerHTML = ICONO_PDF + "PDF del lote"; }
+}
+
+/* ---------- imágenes (estado de cuenta, remisión, despacho) ---------- */
+let archivoImg = null, urlImg = null, urlArch = null;
+const nombreArchivo = t => String(t).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().replace(/[^A-Z0-9]+/g, "_").replace(/^_|_$/g, "");
+async function mostrarImagen(canvas, nombre, archivo){
+  const blob = await new Promise(ok => canvas.toBlob(ok, "image/png"));
+  archivoImg = archivo || new File([blob], nombre + ".png", {type: "image/png"});
+  if (urlImg) URL.revokeObjectURL(urlImg);
+  urlImg = URL.createObjectURL(blob);
+  $("#visor-img").src = urlImg;
+  if (urlArch) URL.revokeObjectURL(urlArch);
+  urlArch = archivo ? URL.createObjectURL(archivo) : urlImg;
+  $("#compartir").lastChild.textContent = archivo ? " Compartir PDF" : " Compartir";
+  $("#visor").classList.remove("oculto");
+}
+function cerrarVisor(){ $("#visor").classList.add("oculto"); }
+async function compartir(){
+  if (!archivoImg) return;
+  try {
+    if (navigator.canShare && navigator.canShare({files: [archivoImg]})){ await navigator.share({files: [archivoImg]}); return; }
+  } catch (e) { if (e.name === "AbortError") return; }
+  const a = document.createElement("a"); a.href = urlArch || urlImg; a.download = archivoImg.name; document.body.appendChild(a); a.click(); a.remove();
+}
+async function imgEstado(id){
+  const c = D.clientes.find(x => x.id === id), clave = $("#sem-est").value, fmt = $("#fmt-est").value;
+  const est = c.est[clave], e = est && (est[fmt] || est.DEUDA || est);
+  if (!e) return;
+  const b = $("#btn-est"); b.disabled = true; b.textContent = "Generando…";
+  try { await mostrarImagen(await dibujarEstado(e, $("#obs-est").value, D.venc_dias), `ESTADO_${nombreArchivo(c.n)}_sem${String(e.s).padStart(2, "0")}`); }
+  finally { b.disabled = false; b.innerHTML = ICONO_IMG + "Imagen del estado de cuenta"; }
+}
+async function imgRem(si, id){
+  const r = D.semanas[si].rems.find(x => x.id === id), b = $("#btn-rem");
+  b.disabled = true; b.textContent = "Generando…";
+  try {
+    if (r.img.desp) await mostrarImagen(await dibujarDespacho(r.img), `DESPACHO_${nombreArchivo(r.cli)}_${r.f}`);
+    else await mostrarImagen(await dibujarRemision(r.img), `REMISION_${nombreArchivo(r.img.num)}_${nombreArchivo(r.cli)}`);
+  } finally { b.disabled = false; b.innerHTML = ICONO_IMG + (r.img.desp ? "Imagen del despacho" : "Imagen de la remisión"); }
+}
+const ICONO_PDF = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v4h4M10 13h6M10 17h4"/></svg>`;
+const ICONO_IMG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="2"/><path d="m21 17-5-5-9 8"/></svg>`;
+
+/* ---------- arranque ---------- */
+document.querySelectorAll("nav button").forEach(b => b.addEventListener("click", () => ir(b.dataset.v)));
+$("#entrar").addEventListener("click", entrar);
+$("#clave").addEventListener("keydown", e => { if (e.key === "Enter") entrar(); });
+$("#recargar").addEventListener("click", async () => {
+  const r = await cargar(true).catch(e => ({error: e}));
+  if (r.ok) pintar(); else if (r.necesitaClave) bloquear("La contraseña cambió en el PC. Escríbela de nuevo.");
+});
+document.addEventListener("visibilitychange", async () => {
+  if (document.visibilityState === "visible" && D){ const r = await cargar(true).catch(() => ({})); if (r.ok) pintar(); }
+});
+(async () => {
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+  if (!window.crypto?.subtle){ bloquear("Abre esta página con https (desde Safari)."); return; }
+  if (!localStorage.getItem(LS.clave)){ bloquear(); return; }
+  const r = await cargar(true).catch(e => ({error: e}));
+  if (r.ok) mostrarApp(); else bloquear(r.necesitaClave ? "" : (r.error?.message || ""));
+})();
+</script>
+</body>
+</html>
